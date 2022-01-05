@@ -43,7 +43,7 @@ function App() {
 	// ETHERSCAN - verification of contract
 	const verify = async () => {
 		try{
-			const requestOptions = `apikey=${process.env.ETHERSCAN_API}&module=contract&action=verifysourcecode`;
+			const params = `apikey=${process.env.ETHERSCAN_API}&module=contract&action=verifysourcecode`;
 			const response = await fetch('https://api.etherscan.io/api', params);
 		} catch(e) {
 			console.log(e);
