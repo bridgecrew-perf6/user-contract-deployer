@@ -20,7 +20,7 @@ function App() {
 
 	// Deploy and Verify
 	const deployer = async () => {
-		const [abi, bytecode] = await getArtifact();
+		const [abi, bytecode, sourceCode] = await getArtifact();
 		const signer = provider.getSigner();
 		const ContractFile = new ethers.ContractFactory(abi,bytecode,signer);
 		const contractFile = await ContractFile.deploy();
@@ -33,7 +33,7 @@ function App() {
     try {
         const response = await fetch('http://127.0.0.1:8080/getArtifact');
 				const data = await response.json();
-				return [data.abi, data.bytecode];
+				return [data.abi, data.bytecode, data.sourceCode];
     } catch (err) {
         console.log(err);
     }
@@ -41,9 +41,19 @@ function App() {
 
 	
 	// ETHERSCAN - verification of contract
-	const verify = async () => {
+	const verify = async (sourceCode, contractAddress) => {
 		try{
-			const params = `apikey=${process.env.ETHERSCAN_API}&module=contract&action=verifysourcecode`;
+			const params = `
+				apikey=${process.env.ETHERSCAN_API}&
+				module=contract&
+				action=verifysourcecode&
+				sourceCode=${sourceCode}&
+				contractaddress=${contractAddress}&
+				codeformat=solidity-single-file&
+				contractname=SmartContract&
+				compilerversion=v0.8.0+commit.c7dfd78e&
+				optimizationUsed=1
+			`;
 			const response = await fetch('https://api.etherscan.io/api', params);
 		} catch(e) {
 			console.log(e);
