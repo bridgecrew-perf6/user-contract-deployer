@@ -20,12 +20,20 @@ function App() {
 
 	// Deploy and Verify
 	const deployer = async () => {
-		const [abi, bytecode, sourceCode] = await getArtifact();
-		const signer = provider.getSigner();
-		const ContractFile = new ethers.ContractFactory(abi,bytecode,signer);
-		const contractFile = await ContractFile.deploy();
-		await contractFile.deployed();
-		console.log("Smart contract deployed with address:", contractFile.address);
+		try{
+			const [abi, bytecode, sourceCode] = await getArtifact();
+			const signer = provider.getSigner();
+			const Contract = new ethers.ContractFactory(abi,bytecode,signer);
+			const contract = await Contract.deploy('https://boredapeyachtclub.com/api/mutants/');
+			// Deploy contract
+			await contract.deployed();
+			console.log("Smart contract deployed with address:", contract.address);
+			// Verify contract
+			await sleep(3000);
+			await verify(sourceCode, contract.address); 
+		} catch(e) {
+			console.log(e);
+		}
 	};
 
   // API - GET request to node server /getArtifact
@@ -39,22 +47,25 @@ function App() {
     }
   }
 
-	
+	function sleep(ms) {
+  	return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
 	// ETHERSCAN - verification of contract
 	const verify = async (sourceCode, contractAddress) => {
 		try{
-			const params = `
-				apikey=${process.env.ETHERSCAN_API}&
-				module=contract&
-				action=verifysourcecode&
-				sourceCode=${sourceCode}&
-				contractaddress=${contractAddress}&
-				codeformat=solidity-single-file&
-				contractname=SmartContract&
-				compilerversion=v0.8.0+commit.c7dfd78e&
-				optimizationUsed=1
-			`;
-			const response = await fetch('https://api.etherscan.io/api', params);
+		  const hexConstructor = 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002a68747470733a2f2f626f7265646170657961636874636c75622e636f6d2f6170692f6d7574616e74732f00000000000000000000000000000000000000000000;
+			const params = `apikey=CHXY73XVK4ZZM8K6X55X5N8D4CMX4KBSDA&module=contract&action=verifysourcecode&sourceCode=${sourceCode}&contractaddress=${contractAddress}&codeformat=solidity-single-file&contractname=TestNFTContract&compilerversion=v0.8.7+commit.e28d00a7&optimizationUsed=0&constructorArguments=${hexConstructor}`;
+			const header = {
+				method: 'POST',
+				headers: {
+				  'Content-type': 'application/x-www-form-urlencoded',
+				},
+				body: params
+			};
+			const response = await fetch('https://api-rinkeby.etherscan.io/api', header );
+			const _verify = await response.json();
+			console.log(_verify);
 		} catch(e) {
 			console.log(e);
 		}
