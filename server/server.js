@@ -2,8 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const fs = require("fs");
-const { abi, bytecode } = require("./SmartContract.js");
-
+const metadata = require("../artifacts/contracts/testcontract.sol/TestNFTContract.json");
 
 // CORS - Websites allowed to call our API
 app.use(cors({
@@ -15,12 +14,12 @@ app.use(express.json());
 
 // GET API Endpoints
 app.get('/getArtifact', function (req, res) {
-	fs.readFile('./server/SmartContract.sol', (error, data) => {
+	fs.readFile('contracts/testcontract.sol', (error, data) => {
 	  if(error) {
 			throw error;
 		}
 		// Files client needs to deploy contract
-		res.send({abi: abi, bytecode: bytecode, sourceCode: data.toString()});
+		res.send({abi: metadata.abi, bytecode: metadata.bytecode, sourceCode: data.toString()});
 	});
 });
 
